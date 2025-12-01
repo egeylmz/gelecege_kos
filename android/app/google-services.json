@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "959489501986",
+    "project_id": "gelecege-kos",
+    "storage_bucket": "gelecege-kos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:959489501986:android:d4caf45d22a148b514537b",
+        "android_client_info": {
+          "package_name": "com.example.gelecege_kos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7Fvc52LTmzLYxnG0W-aNAbojlEoz2AxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
