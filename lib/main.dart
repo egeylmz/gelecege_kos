@@ -3,6 +3,7 @@ import 'package:gelecege_kos/utilities/google_sign_in.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'add_activity_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +12,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -82,12 +82,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  void _openAddActivityPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddActivityScreen()),
+    );
   }
 
   @override
@@ -97,23 +97,18 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      body: const Center(
+        child: Text(
+          'Geleceğe Koş',
+          style: TextStyle(fontSize: 24),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), 
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openAddActivityPage,
+        tooltip: 'Aktivite Ekle!',
+        icon: const Icon(Icons.add),
+        label: const Text('Aktivite Ekle!'),
+      ),
     );
   }
 }
