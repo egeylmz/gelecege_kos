@@ -34,7 +34,7 @@ class UserProfilePage extends StatelessWidget {
             // Profili Düzenle Butonu
             ElevatedButton(
               onPressed: () {
-                // TODO: Profil düzenleme sayfasına yönlendirme eklenecek.
+                    // PROFİL DÜZENLEME SAYFASINA YÖNLENDİRİLECEK
                 print('Profili Düzenle butonuna tıklandı.');
               },
               child: const Text('Profili Düzenle'),

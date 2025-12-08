@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'pages/add_activity_screen.dart';
 import 'pages/user_profile.dart';
+import 'pages/goal_set_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void goToMainPage() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder:
-      (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
+      (context) => const MyHomePage(title: 'Geleceğe Koş!'),
       ),
     );
   }
@@ -90,6 +91,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _openGoalSetPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const GoalSetPage()),
+    );
+  }
+
   void _goToProfilePage() {
     Navigator.push(
       context,
@@ -121,12 +129,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: const Center(
         child: Text(
-          'Geleceğe Koş',
-          style: TextStyle(fontSize: 24),
+          '00000 km',   // Databasede veriler toplanıp bastırılacak
+          style: TextStyle(fontSize: 48),
         ),
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
             onPressed: _openAddActivityPage,
@@ -137,11 +146,18 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const SizedBox(height: 10),
           FloatingActionButton.extended(
+            onPressed: _openGoalSetPage,
+            tooltip: 'Aktivite Ekle!',
+            icon: const Icon(Icons.add),
+            label: const Text('Hedef Belirle!'),
+            heroTag: 'set_goal',
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
             onPressed: _signOut,
             tooltip: 'Çıkış Yap',
-            icon: const Icon(Icons.logout),
-            label: const Text('Çıkış Yap'),
             heroTag: 'logout',
+            child: const Icon(Icons.logout),
           ),
         ],
       ),
