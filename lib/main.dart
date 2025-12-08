@@ -89,6 +89,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<void> _signOut() async {
+    await GoogleSignIn().signOut();
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const SplashScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,11 +110,25 @@ class _MyHomePageState extends State<MyHomePage> {
           style: TextStyle(fontSize: 24),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddActivityPage,
-        tooltip: 'Aktivite Ekle!',
-        icon: const Icon(Icons.add),
-        label: const Text('Aktivite Ekle!'),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: _openAddActivityPage,
+            tooltip: 'Aktivite Ekle!',
+            icon: const Icon(Icons.add),
+            label: const Text('Aktivite Ekle!'),
+            heroTag: 'add_activity',
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton.extended(
+            onPressed: _signOut,
+            tooltip: 'Çıkış Yap',
+            icon: const Icon(Icons.logout),
+            label: const Text('Çıkış Yap'),
+            heroTag: 'logout',
+          ),
+        ],
       ),
     );
   }
