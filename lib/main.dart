@@ -83,7 +83,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0;     //hangi sekme seçili olduğunu tutacak.
 
+  static const List<Widget> _widgetOptions = <Widget>[
+    GoalSetPage(), // DEĞİŞTİRİLECEK
+    Text(
+      'Top 10 Kullanıcılar', // top_ten_contributors EKLENECEK
+    ),
+    Center(
+      child: Text(
+        '00000 km', // Ana ekran içeriği
+        style: TextStyle(fontSize: 48),
+      ),
+    ),
+    UserProfilePage(), // Profil Sayfası
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
   void _openAddActivityPage() {
     Navigator.push(
       context,
@@ -119,48 +139,34 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            tooltip: 'Profil',
-            onPressed: _goToProfilePage,
-          )
-        ],
       ),
-      body: const Center(
-        child: Text(
-          '00000 km',   // Databasede veriler toplanıp bastırılacak
-          style: TextStyle(fontSize: 48),
+      body: _widgetOptions.elementAt(_selectedIndex),
+
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Ana Sayfa',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.flag),
+              label: 'Hedefler',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.leaderboard),
+              label: 'Top 10',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profil',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.green,
+          unselectedItemColor: Colors.grey, // Seçili olmayan ikonların rengi
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed, // 4 ikon için bu ayar daha iyi görünür
         ),
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            onPressed: _openAddActivityPage,
-            tooltip: 'Aktivite Ekle!',
-            icon: const Icon(Icons.add),
-            label: const Text('Aktivite Ekle!'),
-            heroTag: 'add_activity',
-          ),
-          const SizedBox(height: 10),
-          FloatingActionButton.extended(
-            onPressed: _openGoalSetPage,
-            tooltip: 'Aktivite Ekle!',
-            icon: const Icon(Icons.add),
-            label: const Text('Hedef Belirle!'),
-            heroTag: 'set_goal',
-          ),
-          const SizedBox(height: 10),
-          FloatingActionButton(
-            onPressed: _signOut,
-            tooltip: 'Çıkış Yap',
-            heroTag: 'logout',
-            child: const Icon(Icons.logout),
-          ),
-        ],
-      ),
     );
   }
 }
