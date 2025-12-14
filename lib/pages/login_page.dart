@@ -121,6 +121,47 @@ class LoginPage extends StatelessWidget {
 
               const SizedBox(height: 32),
 
+              // Log in button
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {Navigator.pushReplacementNamed(context, '/feed');},
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black,            
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 2,
+                  ),
+                  child: const Text("Log In",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // google sign in button eklenecek!!
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Don't have an account? ",
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                  GestureDetector(
+                    onTap: () {Navigator.pushReplacementNamed(context, '/register');},
+                    child: const Text("Sign up",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ]
           ),
         )
