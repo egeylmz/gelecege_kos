@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class AddActivityScreen extends StatefulWidget {
@@ -12,12 +14,14 @@ class AddActivityScreen extends StatefulWidget {
 }
 
 class _AddActivityScreenState extends State<AddActivityScreen> {
-  final _formKey = GlobalKey<FormState>();    // form durumu için
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _distanceController = TextEditingController();
   DateTime? _selectedDate;
+  bool _isLoading = false;
 
-  void dispose() {    // widget kaldırıldığında controller'ları kapat
+  @override
+  void dispose() {
     _nameController.dispose();
     _distanceController.dispose();
     super.dispose();
@@ -26,9 +30,9 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),   //başlangıç tarihi
-      firstDate: DateTime(2000),    // en erken tarih
-      lastDate: DateTime(2101),     // en geç tarih
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -37,18 +41,69 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
+  void _submitForm() async {
+    // Formun geçerli olup olmadığını ve tarih seçilip seçilmediğini kontrol et
+    final isFormValid = _formKey.currentState!.validate();
+    if (!isFormValid || _selectedDate == null) {
+      if (_selectedDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lütfen bir aktivite tarihi seçin.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true; // Yükleme animasyonunu başlat
+    });
+
+    try {
+      // Eğer koleksiyon yoksa, ilk veri eklendiğinde otomatik olarak oluşturulur.
+      CollectionReference activities =
+      FirebaseFirestore.instance.collection('activities');
+
+      // Formdan verileri al
       final String name = _nameController.text;
       final double distance = double.parse(_distanceController.text.replaceAll(',', '.'));
-      final DateTime? date = _selectedDate;
+      final DateTime date = _selectedDate!;
 
-      ScaffoldMessenger.of(context).showSnackBar(     // bildirim mesajı
-        const SnackBar(content: Text('Başarıyla kaydedildi!')),
-      );
-      Navigator.pop(context);   // formu kapat
+      // Veriyi koleksiyona ekle
+      await activities.add({
+        'name': name,
+        'distance': distance,
+        'date': Timestamp.fromDate(date),
+        'approvedActivity' : false,
+        // userId'yi doğrudan ihtiyaç anında buradan alıyoruz.
+        'userId' : FirebaseAuth.instance.currentUser?.uid,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Aktivite başarıyla kaydedildi!')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bir hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,13 +111,24 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
       appBar: AppBar(
         title: const Text('Yeni Aktivite Ekle'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _submitForm,
-            tooltip: 'Kaydet',
-          ),
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _submitForm,
+              tooltip: 'Kaydet',
+            ),
         ],
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -70,18 +136,18 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Ad Soyad',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Lütfen adınızı girin.';
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ad Soyad',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Lütfen adınızı girin.';
+                    }
+                    return null;
                   }
-                  return null;
-                }
               ),
               const SizedBox(height: 16.0),
 
@@ -94,7 +160,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
                 ),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[\,\.]?\d{0,2}')),   //sadece sayı ve virgül/noktaya izin ver
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[\,\.]?\d{0,2}')),
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -125,12 +191,12 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
               const SizedBox(height: 32),
 
               ElevatedButton.icon(
-                onPressed: _submitForm,
+                onPressed: _isLoading ? null : _submitForm,
                 icon: const Icon(Icons.save),
-                label: const Text('Kaydet'),
+                label: _isLoading ? const Text('Kaydediliyor...') : const Text('Kaydet'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                )
+                ),
               ),
             ],
           ),

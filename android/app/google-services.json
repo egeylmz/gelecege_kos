@@ -12,7 +12,20 @@
           "package_name": "com.example.gelecege_kos"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "959489501986-kfj135pd3s2pia7hfb11ppicv518854t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gelecege_kos",
+            "certificate_hash": "48625f48de8acc6cf04c9887892f76e07890058f"
+          }
+        },
+        {
+          "client_id": "959489501986-kp81bfjaulb8oietla60p9hbu741n6gj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD7Fvc52LTmzLYxnG0W-aNAbojlEoz2AxI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "959489501986-kp81bfjaulb8oietla60p9hbu741n6gj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "959489501986-uccut91htn2jd7pair3b11805qhnei16.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gelecegeKos"
+              }
+            }
+          ]
         }
       }
     }
