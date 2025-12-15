@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
-class GoalSetPage extends StatefulWidget {  const GoalSetPage({super.key});
+class GoalSetPage extends StatefulWidget {
+  const GoalSetPage({super.key});
 
-@override
-State<GoalSetPage> createState() => _GoalSetPageState();
+  @override
+  State<GoalSetPage> createState() => _GoalSetPageState();
 }
 
 class _GoalSetPageState extends State<GoalSetPage> {
@@ -15,6 +19,7 @@ class _GoalSetPageState extends State<GoalSetPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   DateTime? _selectedDate;
+  bool _isLoading = false; // Veritabanı işlemi sırasında bekleme durumunu yönetmek için
 
   @override
   void dispose() {
@@ -30,7 +35,7 @@ class _GoalSetPageState extends State<GoalSetPage> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != _selectedDate) {
@@ -40,17 +45,70 @@ class _GoalSetPageState extends State<GoalSetPage> {
     }
   }
 
-  void _saveGoal() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _saveGoal() async {
+    final isFormValid = _formKey.currentState!.validate();
+    if (!isFormValid || _selectedDate == null) {
+      if (_selectedDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lütfen bir başlangıç tarihi seçin.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception("Hedef belirlemek için önce giriş yapmalısınız.");
+      }
+
       final sponsorName = _sponsorNameController.text;
-      final targetKm = double.tryParse(_targetKmController.text) ?? 0.0;
-      final saplingCount = int.tryParse(_saplingCountController.text) ?? 0;
-      final startDate = _selectedDate;
+      final targetKm = double.parse(_targetKmController.text.replaceAll(',', '.'));
+      final saplingCount = int.parse(_saplingCountController.text);
       final email = _emailController.text;
       final phone = _phoneController.text;
 
-      if (Navigator.canPop(context)) {    //kaydettikten sonra önceki sayfaya dönecek
-        Navigator.pop(context);
+      await FirebaseFirestore.instance.collection('goals').add({
+        'userId': user.uid,
+        'sponsorName': sponsorName,
+        'sponsorEmail': email,
+        'sponsorPhone': phone,
+        'targetKm': targetKm,
+        'saplingCount': saplingCount,
+        'startDate': Timestamp.fromDate(_selectedDate!),
+        'createdAt': FieldValue.serverTimestamp(),
+        'currentKm': 0.0,
+        'isCompleted': false,
+        'approveGoal': false,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Hedef başarıyla kaydedildi! Onay bekleniyor.')),
+        );
+        Navigator.pop(context); // Kayıt sonrası sayfadan çık
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hedef kaydedilirken bir hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false; // İşlem bitince yüklenme durumunu sonlandır
+        });
       }
     }
   }
@@ -115,6 +173,11 @@ class _GoalSetPageState extends State<GoalSetPage> {
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                // Telefon numarası için isteğe bağlı formatlayıcılar
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(11),
+                ],
               ),
 
               const SizedBox(height: 16),
@@ -128,11 +191,16 @@ class _GoalSetPageState extends State<GoalSetPage> {
                   prefixIcon: Icon(Icons.directions_run),
                 ),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                // Virgül veya nokta ile girişe izin verir
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+[\,\.]?\d{0,2}')),
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Lütfen bir hedef KM girin.';
                   }
-                  if (double.tryParse(value) == null) {
+                  // Hem virgülü hem noktayı kabul et
+                  if (double.tryParse(value.replaceAll(',', '.')) == null) {
                     return 'Lütfen geçerli bir sayı girin.';
                   }
                   return null;
@@ -149,6 +217,7 @@ class _GoalSetPageState extends State<GoalSetPage> {
                   prefixIcon: Icon(Icons.park),
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Sadece tam sayı girişi
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Lütfen fidan sayısını girin.';
@@ -170,19 +239,22 @@ class _GoalSetPageState extends State<GoalSetPage> {
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
                   _selectedDate == null
-                      ? 'Aktivite Tarihini Seçin'
-                      : 'Seçilen Tarih: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
+                      ? 'Başlangıç Tarihini Seçin'
+                      : 'Başlangıç Tarihi: ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
                 ),
                 onTap: () => _selectDate(context),
               ),
 
               const SizedBox(height: 32),
 
-              // Kaydet Butonu
               ElevatedButton.icon(
-                onPressed: _saveGoal,
-                icon: const Icon(Icons.save),
-                label: const Text('Hedefi Kaydet'),
+                onPressed: _isLoading ? null : _saveGoal,
+                icon: _isLoading
+                    ? const SizedBox.shrink() // Yüklenirken boşluk bırak
+                    : const Icon(Icons.save),
+                label: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Hedefi Kaydet'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   textStyle: const TextStyle(fontSize: 16),

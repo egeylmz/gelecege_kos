@@ -10,7 +10,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'home_page.dart';
 
 
-// 1. Adım: StatefulWidget'a dönüştür
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -19,8 +18,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // 2. Adım: Yüklenme durumunu takip etmek için bir değişken
   bool _isSigningIn = false;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,6 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // ... (Welcome, email ve password kısımları aynı kalıyor)
                     const Text(
                       "Welcome!",
                       style: TextStyle(
@@ -54,8 +60,33 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 50),
 
-                    // ... email ve password TextField'ları ...
-                    // (Bu kısımlarda değişiklik yok)
+                    // E-posta giriş alanı
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Şifre giriş alanı
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
 
                     const SizedBox(height: 32),
 
@@ -64,8 +95,11 @@ class _LoginPageState extends State<LoginPage> {
                       height: 52,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Henüz e-posta/şifre girişi yapmadığımız için
-                          // şimdilik bir uyarı gösterebiliriz.
+                          // E POSTA VE ŞİFRE İLE GİRİŞ YAP
+                          final email = _emailController.text;
+                          final password = _passwordController.text;
+                          print('Email: $email, Password: $password');
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('E-posta ile giriş henüz aktif değil.'),
@@ -87,9 +121,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 24), // Boşluğu artırdık
+                    const SizedBox(height: 24),
 
-                    // 3. Adım: "Or continue with" ayırıcısı
                     Row(
                       children: [
                         const Expanded(child: Divider(color: Colors.black26)),
@@ -130,10 +163,8 @@ class _LoginPageState extends State<LoginPage> {
                             _isSigningIn = true;
                           });
 
-                          // Google ile giriş fonksiyonunu çağır
                           await signInWithGoogle();
 
-                          // Yüklenme durumunu bitir
                           setState(() {
                             _isSigningIn = false;
                           });
