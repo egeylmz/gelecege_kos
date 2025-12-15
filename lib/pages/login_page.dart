@@ -156,24 +156,18 @@ class _LoginPageState extends State<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
-                          "Welcome!",
+                          "Geleceğe Koş",
                           style: TextStyle(
-                            fontSize: 32,
+                            fontFamily: 'rooster',
+                            fontSize: 48,
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
                             color: Colors.white,
+                            letterSpacing: 2.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 8),
-
-                        Text("Please log in to continue",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                            textAlign: TextAlign.center),
 
                         const SizedBox(height: 40),
 
