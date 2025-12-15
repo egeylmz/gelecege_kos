@@ -33,185 +33,215 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xFFF5F5F7),
-        body: Center(
-          child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      "Welcome!",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    Text("Please log in to continue",
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/icons/login_background.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        "Welcome!",
                         style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
                         ),
-                        textAlign: TextAlign.center),
-
-                    const SizedBox(height: 50),
-
-                    // E-posta giriş alanı
-                    TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
 
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 8),
 
-                    // Şifre giriş alanı
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Log in button
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // E POSTA VE ŞİFRE İLE GİRİŞ YAP
-                          final email = _emailController.text;
-                          final password = _passwordController.text;
-                          print('Email: $email, Password: $password');
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('E-posta ile giriş henüz aktif değil.'),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          "Log In",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    Row(
-                      children: [
-                        const Expanded(child: Divider(color: Colors.black26)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Text(
-                            "Or continue with",
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ),
-                        const Expanded(child: Divider(color: Colors.black26)),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    //Google Sign-In Butonu
-                    _isSigningIn
-                        ? const Center(child: CircularProgressIndicator())
-                        : SizedBox(
-                      height: 52,
-                      child: OutlinedButton.icon(
-                        icon: SvgPicture.asset(
-                          'assets/icons/google_logo.svg',
-                          height: 22,
-                        ),
-                        label: const Text(
-                          "Sign in with Google",
+                      Text("Please log in to continue",
                           style: TextStyle(
-                            color: Colors.black87,
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                          textAlign: TextAlign.center),
+
+                      const SizedBox(height: 50),
+
+                      // E-posta giriş alanı
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                          prefixIcon: const Icon(Icons.email_outlined, color: Colors.white70),
+                          filled: true,
+                          fillColor: Colors.black.withOpacity(0.3),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: const BorderSide(color: Colors.white),
                           ),
                         ),
-                        onPressed: () async {
-                          // Butona basıldığında yüklenme durumunu başlat
-                          setState(() {
-                            _isSigningIn = true;
-                          });
+                        style: const TextStyle(color: Colors.white),
+                      ),
 
-                          await signInWithGoogle();
+                      const SizedBox(height: 16),
 
-                          setState(() {
-                            _isSigningIn = false;
-                          });
+                      // Şifre giriş alanı
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                          prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
+                          filled: true,
+                          fillColor: Colors.black.withOpacity(0.3),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: const BorderSide(color: Colors.white),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
 
-                          // Giriş başarılı olduysa ana sayfaya yönlendir.
-                          if (FirebaseAuth.instance.currentUser != null && context.mounted) {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => const HomePage(title: 'Geleceğe Koş!'),
+                      const SizedBox(height: 32),
+
+                      // Log in button
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // E POSTA VE ŞİFRE İLE GİRİŞ YAP
+                            final email = _emailController.text;
+                            final password = _passwordController.text;
+                            print('Email: $email, Password: $password');
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('E-posta ile giriş henüz aktif değil.'),
                               ),
                             );
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black,
+                            backgroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            side: BorderSide(color: Colors.grey[300]!)),
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account? ",
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacementNamed(context, '/register');
-                          },
+                            elevation: 2,
+                          ),
                           child: const Text(
-                            "Sign up",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
+                            "Log In",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                         ),
-                      ],
-                    ),
-                  ]
-              )
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Row(
+                        children: [
+                          const Expanded(child: Divider(color: Colors.white54)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                            child: Text(
+                              "Or continue with",
+                              style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                            ),
+                          ),
+                          const Expanded(child: Divider(color: Colors.white54)),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      //Google Sign-In Butonu
+                      _isSigningIn
+                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                          : SizedBox(
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          icon: SvgPicture.asset(
+                            'assets/icons/google_logo.svg',
+                            height: 22,
+                          ),
+                          label: const Text(
+                            "Sign in with Google",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onPressed: () async {
+                            // Butona basıldığında yüklenme durumunu başlat
+                            setState(() {
+                              _isSigningIn = true;
+                            });
+
+                            await signInWithGoogle();
+
+                            setState(() {
+                              _isSigningIn = false;
+                            });
+
+                            // Giriş başarılı olduysa ana sayfaya yönlendir.
+                            if (FirebaseAuth.instance.currentUser != null && context.mounted) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => const HomePage(title: 'Geleceğe Koş!'),
+                                ),
+                              );
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              side: BorderSide(color: Colors.grey[300]!)),
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account? ",
+                            style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushReplacementNamed(context, '/register');
+                            },
+                            child: const Text(
+                              "Sign up",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ]
+                )
+            ),
           ),
         )
     );

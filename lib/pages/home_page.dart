@@ -31,7 +31,6 @@ class _TotalDistanceDisplayState extends State<TotalDistanceDisplay> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('activities')
-          .where('userId', isEqualTo: currentUser!.uid)
           .where('approvedActivity', isEqualTo: true) // Sadece onaylanmış aktiviteler
           .snapshots(),
       builder: (context, snapshot) {
