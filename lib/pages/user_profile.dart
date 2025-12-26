@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart'; // Tarihi formatlamak için
+import 'package:intl/intl.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -13,19 +13,25 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  // Oturum açmış kullanıcıyı burada null olarak başlatıp initState içinde doldurmak en güvenli yoldur.
   User? _currentUser;
 
   @override
   void initState() {
     super.initState();
-    // Widget ilk oluşturulduğunda kullanıcı bilgisini al.
     _currentUser = FirebaseAuth.instance.currentUser;
+  }
+
+  // Tarihi güvenli formatlayan yardımcı fonksiyon
+  String _formatDate(Timestamp timestamp) {
+    try {
+      return DateFormat('dd MMMM yyyy', 'tr_TR').format(timestamp.toDate());
+    } catch (e) {
+      return DateFormat('dd/MM/yyyy').format(timestamp.toDate());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold'u Container ile sarmalayarak arka plan görselini ekliyoruz
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
@@ -34,53 +40,79 @@ class _UserProfilePageState extends State<UserProfilePage> {
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Arka planın görünmesi için şeffaf yapıyoruz
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          foregroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          centerTitle: true,
         ),
         body: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const CircleAvatar(
-                radius: 60,
-                backgroundColor: Colors.grey,
-                child: Icon(
-                  Icons.person,
-                  size: 60,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Kullanıcı bilgilerini gösteren bir bölüm
-              Text(
-                // currentUser null olabileceğinden kontrol ekliyoruz
-                _currentUser?.displayName ?? _currentUser?.email ?? 'Kullanıcı Adı',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Profili düzenleme sayfasına yönlendirme yapılabilir
-                },
-                child: const Text('Profili Düzenle'),
-              ),
-              const SizedBox(height: 40),
-              const Text(
-                'Geçmiş Aktiviteler',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Divider(thickness: 1),
               const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.white24,
+                  child: Icon(
+                    Icons.person,
+                    size: 60,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              Text(
+                _currentUser?.displayName ?? _currentUser?.email ?? 'Misafir Kullanıcı',
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [Shadow(blurRadius: 2, color: Colors.black45, offset: Offset(1,1))] // Okunabilirlik için gölge
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 20),
+
+              ElevatedButton.icon(
+                onPressed: () {
+                  // PROFİL DÜZENLEME SAYFASI BURADA AÇILACAK
+                },
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text('Profili Düzenle'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black87,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              const Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Geçmiş Aktiviteler',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const Divider(color: Colors.white70, thickness: 1),
+
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  // Sorguda 'currentUser' yerine '_currentUser' kullanıyoruz.
                   stream: FirebaseFirestore.instance
                       .collection('activities')
                       .where('userId', isEqualTo: _currentUser?.uid)
@@ -90,20 +122,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator(color: Colors.white));
                     }
                     if (snapshot.hasError) {
-                      // Daha açıklayıcı bir hata mesajı
-                      print(snapshot.error); // Hatayı konsola yazdır
+                      debugPrint("Firestore Hatası: ${snapshot.error}");
                       return const Center(
-                          child: Text('Aktiviteler yüklenirken bir hata oluştu.'));
+                          child: Text('Veriler yüklenemedi. İnternetinizi kontrol edin.', style: TextStyle(color: Colors.white70)));
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'Henüz onaylanmış aktiviteniz bulunmuyor.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.directions_run_outlined, size: 50, color: Colors.white54),
+                            SizedBox(height: 10),
+                            Text(
+                              'Henüz onaylanmış aktiviteniz yok.',
+                              style: TextStyle(fontSize: 16, color: Colors.white70),
+                            ),
+                          ],
                         ),
                       );
                     }
@@ -111,32 +148,41 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     final activityDocs = snapshot.data!.docs;
 
                     return ListView.builder(
+                      physics: const BouncingScrollPhysics(),
                       itemCount: activityDocs.length,
                       itemBuilder: (context, index) {
                         final activity = activityDocs[index];
                         final data = activity.data() as Map<String, dynamic>;
-
-                        final DateTime date =
-                        (data['date'] as Timestamp).toDate();
-                        // Tarih formatını yerelleştirme için 'tr_TR' eklemek iyidir.
-                        // Eğer tr_TR hatası alırsanız main.dart'ta initializeDateFormatting() gerekebilir veya sadece 'dd MMMM yyyy' kullanabilirsiniz.
-                        final String formattedDate =
-                        DateFormat('dd MMMM yyyy', 'tr_TR').format(date);
+                        final double distance = (data['distance'] ?? 0).toDouble();
+                        final Timestamp? timestamp = data['date'] as Timestamp?;
+                        final String dateStr = timestamp != null ? _formatDate(timestamp) : 'Tarih Yok';
 
                         return Card(
-                          color: Colors.white.withOpacity(0.85),
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          color: Colors.white.withOpacity(0.9),
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          margin: const EdgeInsets.symmetric(vertical: 6.0),
                           child: ListTile(
-                            leading: const Icon(Icons.directions_run,
-                                color: Colors.blueAccent),
-                            title: Text(
-                              '${data['distance'] ?? 0} km Koşu',
-                              style:
-                              const TextStyle(fontWeight: FontWeight.bold),
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.directions_run, color: Colors.blueAccent),
                             ),
-                            subtitle: Text(formattedDate),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {},
+                            title: Text(
+                              '$distance km Koşu',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                            ),
+                            subtitle: Text(
+                              dateStr,
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                            onTap: () {
+                              // AKTİVİTE DETAY SAYFASI EKLERSEK BURAYA EKLENECEK
+                            },
                           ),
                         );
                       },
