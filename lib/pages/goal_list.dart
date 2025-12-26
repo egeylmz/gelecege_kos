@@ -12,7 +12,6 @@ class GoalListPage extends StatefulWidget {
 }
 
 class _GoalListPageState extends State<GoalListPage> {
-
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
   void _goToAddGoalPage() {
@@ -29,85 +28,84 @@ class _GoalListPageState extends State<GoalListPage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Hedefler"),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Yeni Hedef Ekle',
-            onPressed: _goToAddGoalPage,
-          ),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("icons/main_background.png"),
+          fit: BoxFit.cover,
+        ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('goals') // 'goals' koleksiyonundan
-            .where('approveGoal', isEqualTo: true)
-            .orderBy('createdAt', descending: true)
-            .snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                'Henüz onaylanmış bir hedef bulunmuyor.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            );
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(8.0),
-            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
-
-              String sponsorName = data['sponsorName'] ?? 'Sponsor belirtilmemiş';
-              double targetKm = (data['targetKm'] ?? 0.0).toDouble();
-              double currentKm = (data['currentKm'] ?? 0.0).toDouble();
-              DateTime startDate = (data['startDate'] as Timestamp).toDate();
-
-              // İlerleme yüzdesini hesapla
-              double progress = (targetKm > 0) ? (currentKm / targetKm) : 0.0;
-
-              return Card(
-                elevation: 3,
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16.0),
-                  title: Text(
-                    'Sponsor: $sponsorName',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      // İlerleme Çubuğu (Progress Bar)
-                      LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Hedef: ${targetKm.toStringAsFixed(1)} km - Koşulan: ${currentKm.toStringAsFixed(1)} km'),
-                      const SizedBox(height: 4),
-                      Text('Başlangıç Tarihi: ${DateFormat('dd/MM/yyyy').format(startDate)}'),
-                    ],
-                  ),
-                  isThreeLine: true,
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Arka plan görselinin görünmesi için
+        body: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('goals') // 'goals' koleksiyonundan
+              .where('approveGoal', isEqualTo: true)
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
+          builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Text(
+                  'Henüz onaylanmış bir hedef bulunmuyor.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               );
-            }).toList(),
-          );
-        },
+            }
+
+            return ListView(
+              padding: const EdgeInsets.all(8.0),
+              children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+
+                String sponsorName = data['sponsorName'] ?? 'Sponsor belirtilmemiş';
+                double targetKm = (data['targetKm'] ?? 0.0).toDouble();
+                double currentKm = (data['currentKm'] ?? 0.0).toDouble();
+                DateTime startDate = (data['startDate'] as Timestamp).toDate();
+
+                // İlerleme yüzdesini hesapla
+                double progress = (targetKm > 0) ? (currentKm / targetKm) : 0.0;
+
+                return Card(
+                  elevation: 3,
+                  color: Colors.white.withOpacity(0.75), // Hafif şeffaf kart rengi
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16.0),
+                    title: Text(
+                      'Sponsor: $sponsorName',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        // İlerleme Çubuğu (Progress Bar)
+                        LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey[100],
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Hedef: ${targetKm.toStringAsFixed(1)} km - Koşulan: ${currentKm.toStringAsFixed(1)} km'),
+                        const SizedBox(height: 4),
+                        Text('Başlangıç Tarihi: ${DateFormat('dd/MM/yyyy').format(startDate)}'),
+                      ],
+                    ),
+                    isThreeLine: true,
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
       ),
     );
   }
