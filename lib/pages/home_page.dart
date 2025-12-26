@@ -7,8 +7,8 @@ import 'goal_set_page.dart';
 import 'login_page.dart';
 import 'add_activity_screen.dart';
 import 'goal_list.dart';
+import 'user_search.dart';
 
-// --- YENİ TASARIM: DashboardDisplay (Sadeleştirilmiş) ---
 class DashboardDisplay extends StatefulWidget {
   const DashboardDisplay({super.key});
 
@@ -323,6 +323,7 @@ class _HomePageState extends State<HomePage> {
   static const List<Widget> _widgetOptions = <Widget>[
     DashboardDisplay(),
     GoalListPage(),
+    UserSearchPage(),
     Center(child: Text('top 10', style: TextStyle(color: Colors.white))),
     UserProfilePage(),
   ];
@@ -383,10 +384,16 @@ class _HomePageState extends State<HomePage> {
           highlightColor: Colors.transparent,
         ),
         child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           iconSize: 30,
+
+          showSelectedLabels: false,      // label zorunluğu olduğu için mecbur böyle yaptık
+          showUnselectedLabels: false,
+
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Ana Sayfa'),
             BottomNavigationBarItem(icon: Icon(Icons.flag), label: 'Hedefler'),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Kullanıcılar'),
             BottomNavigationBarItem(icon: Icon(Icons.leaderboard), label: 'Top 10'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
           ],
@@ -395,7 +402,6 @@ class _HomePageState extends State<HomePage> {
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white60,
           onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
         ),
       ),
     );

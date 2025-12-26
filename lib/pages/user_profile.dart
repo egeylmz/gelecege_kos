@@ -30,6 +30,46 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  Widget _buildStatCircle(String label, String count, IconData icon) {
+    return Column(
+      children: [
+        Container(
+          width: 70, // Daire genişliği
+          height: 70, // Daire yüksekliği
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2), // Hafif şeffaf arka plan
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white30, width: 1.5),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white70, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                count,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -81,7 +121,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 5),
 
               ElevatedButton.icon(
                 onPressed: () {
@@ -90,10 +130,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 icon: const Icon(Icons.edit, size: 18),
                 label: const Text('Profili Düzenle'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.white70,
                   foregroundColor: Colors.black87,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
+              ),
+
+              const SizedBox(height: 25),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildStatCircle("Aktivite", "0", Icons.directions_run),
+                  _buildStatCircle("Takipçi", "0", Icons.group),
+                  _buildStatCircle("Takip", "0", Icons.person_add),
+                ],
               ),
 
               const SizedBox(height: 30),

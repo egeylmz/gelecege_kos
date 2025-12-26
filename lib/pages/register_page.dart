@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // 1. Firestore import edildi
 import 'home_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -11,12 +12,26 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  // 2. İsim için yeni controller eklendi
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
   String _errorMessage = '';
+
+  @override
+  void dispose() {
+    // Controller'ları dispose etmeyi unutmayalım (performans için)
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
@@ -27,10 +42,26 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      await _auth.createUserWithEmailAndPassword(
+      // 1. Authentication işlemi (Kullanıcı oluşturma)
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // 2. Firestore'a Kayıt İşlemi (Veritabanına ekleme)
+      if (userCredential.user != null) {
+        String uid = userCredential.user!.uid;
+        String name = _nameController.text.trim();
+
+        await _firestore.collection('users').doc(uid).set({
+          'uid': uid,
+          'email': _emailController.text.trim(),
+          'name': name,
+          // Arama yaparken küçük/büyük harf sorunu yaşamamak için küçük harfli isim kaydediyoruz
+          'searchKey': name.toLowerCase(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
@@ -49,7 +80,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _errorMessage = 'Bir hata oluştu: ${e.message}';
       }
     } catch (e) {
-      _errorMessage = 'Beklenmedik bir hata oluştu.';
+      _errorMessage = 'Beklenmedik bir hata oluştu: $e';
     } finally {
       if (mounted) {
         setState(() {
@@ -92,6 +123,45 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+
+                    // --- İSİM ALANI (YENİ EKLENDİ) ---
+                    TextFormField(
+                      controller: _nameController,
+                      keyboardType: TextInputType.name,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Ad Soyad',
+                        labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                        prefixIcon: const Icon(Icons.person_outline, color: Colors.white70),
+                        filled: true,
+                        fillColor: Colors.black.withOpacity(0.3),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.white),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.red),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.red),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Lütfen adınızı ve soyadınızı girin.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    // --------------------------------
+
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
