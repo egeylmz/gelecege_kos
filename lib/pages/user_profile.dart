@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'edit_profile.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -125,7 +126,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
               ElevatedButton.icon(
                 onPressed: () {
-                  // PROFİL DÜZENLEME SAYFASI BURADA AÇILACAK
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                  );
                 },
                 icon: const Icon(Icons.edit, size: 18),
                 label: const Text('Profili Düzenle'),
